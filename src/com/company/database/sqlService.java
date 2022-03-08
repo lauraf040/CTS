@@ -1,31 +1,19 @@
-package com.company.sql;
+package com.company.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.company.contracts.dbManager;
 
-public class Main {
+import java.sql.*;
 
-    public static void main(String[] args) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:database.db");
-            connection.setAutoCommit(false);
-
-            createTable(connection);
-            insertData(connection);
-            readData(connection);
-
-            connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+public class sqlService implements dbManager {
+    @Override
+    public void connect(Connection connection) throws SQLException, ClassNotFoundException {
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:database.db");
+        connection.setAutoCommit(false);
     }
 
-    private static void createTable(Connection connection) throws SQLException {
+    @Override
+    public void createTable(Connection connection) throws SQLException {
         String sqlDrop = "DROP TABLE IF EXISTS employees";
         String sqlCreate = "CREATE TABLE employees(id INTEGER PRIMARY KEY,"
                 + "name TEXT, address TEXT, salary REAL)";
@@ -37,7 +25,8 @@ public class Main {
         connection.commit();
     }
 
-    private static void insertData(Connection connection) throws SQLException {
+    @Override
+    public void insertData(Connection connection) throws SQLException {
         String sqlInsert = "INSERT INTO employees VALUES(1, 'Popescu Ion', 'Bucharest', 4000)";
         Statement statement = connection.createStatement();
         statement.executeUpdate(sqlInsert);
@@ -56,7 +45,8 @@ public class Main {
         connection.commit();
     }
 
-    private static void readData(Connection connection) throws SQLException {
+    @Override
+    public void readData(Connection connection) throws SQLException {
         String sqlSelect = "SELECT * FROM employees";
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sqlSelect);
@@ -72,7 +62,12 @@ public class Main {
         }
         rs.close();
         statement.close();
+
+    }
+
+    @Override
+    public void disconnect(Connection connection) throws SQLException {
+        connection.close();
     }
 }
 
-}

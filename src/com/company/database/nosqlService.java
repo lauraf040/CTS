@@ -1,24 +1,28 @@
-package com.company.nosql;
+package com.company.database;
 
-import org.bson.Document;
+import com.company.contracts.dbManager;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-public class Main {
-
-    public static void main(String[] args) {
+public class nosqlService implements dbManager {
+    @Override
+    public void connect(Connection connection) throws SQLException, ClassNotFoundException {
         MongoClient mongoClient = new MongoClient("localhost", 27017);
         MongoDatabase mongoDb = mongoClient.getDatabase("test");
+    }
 
+    @Override
+    public void createTable(Connection connection) throws SQLException {
         if(mongoDb.getCollection("employees") != null) {
             mongoDb.getCollection("employees").drop();
         }
 
         mongoDb.createCollection("employees");
+    }
 
+    @Override
+    public void insertData(Connection connection) throws SQLException {
         Document employee1 = new Document().append("name", "Popescu Ion").
                 append("address", "Bucharest").append("salary", 4000);
 
@@ -28,13 +32,18 @@ public class Main {
         Document employee2 = new Document().append("name", "Ionescu Vasile").
                 append("salary", 4500);
         collection.insertOne(employee2);
+    }
 
+    @Override
+    public void readData(Connection connection) throws SQLException {
         FindIterable<Document> result = collection.find();
         for(Document doc : result) {
             System.out.println(doc);
         }
-
-        mongoClient.close();
     }
 
+    @Override
+    public void disconnect(Connection connection) throws SQLException {
+        mongoClient.close();
+    }
 }
